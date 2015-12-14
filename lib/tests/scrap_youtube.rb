@@ -2,25 +2,29 @@ require 'watir-webdriver'
 require '../webdriver_helper.rb'
 require '../tracks_from_youtube/tracks_from_youtube_helper'
 require '../track_scraper.rb'
-require 'pry'
+require 'pry-byebug'
 extend TracksFromYoutubeHelper
 extend WebdriverHelper 
 #magic happening 
 
-url = 'https://www.youtube.com/watch?v=5b9PRVUwKp0'
+begin
+    url = 'https://www.youtube.com/watch?v=5b9PRVUwKp0'
 
-b = Watir::Browser.new
-b.goto(url)
-sleep(3)
-# turn off video, open show more
-url_list = get_mix_urls(b, 3)
-url_list = url_list.unshift(url)
+    b = Watir::Browser.new
+    b.goto(url)
+    sleep(3)
+    # turn off video, open show more
+    
+    url_list = get_mix_urls(b, 5)
+    url_list = url_list.unshift(url)
+    binding.pry
+    tracklist = goto_video_get_tracks(b, url_list, mix_num = 1, tracklist = {})
 
-tracklist = goto_video_get_tracks(b, url_list, mix_num = 1, tracklist = {})
+    tracks = TrackScraper.new(tracklist)
+    got_tracks = tracks.get_track_list_from_youtube_mix
+   
+    puts got_tracks
 
-pp tracklist
-
-tracks = TrackScraper.new(tracklist)
-got_tracks = tracks.get_track_list_from_youtube_mix
-binding.pry
-b.close
+ensure
+    b.close
+end
