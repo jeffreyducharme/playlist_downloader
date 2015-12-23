@@ -8,12 +8,10 @@ class TrackScraper
 		@hash = {}
 	end
 
-	def get_track_list_from_youtube_mix
-		hash = @hash
-		# track_num = 1
-        # binding.pry
+	def get_track_list_from_youtube_mix(hash = @hash)
+		track_num = 1
 		@tracks_hash.each do |key, value|
-			value[:tracks].each do |track_num, track_text|
+			value[:tracks].each do |key, track_text|
 				clean_artist = false
 				clean_track = false
 				if is_track?(track_text, 150)
@@ -24,16 +22,20 @@ class TrackScraper
 					until clean_track == true 
 						track, clean_track = remove_numbers(track)
 					end
-					hash[track_num] = {}
-					hash[track_num][:artist] = artist
-					hash[track_num][:track] = track
-					track_num += 1
+					# binding.pry
+					unless track_already_in_hash?(hash, artist, track) == true
+						hash[track_num] = {}
+						hash[track_num][:artist] = artist
+						hash[track_num][:track] = track
+						track_num += 1
+					end
 				else
+					#eventually add these to a log 
 					puts "this line, #{track_text}, is probably not a track"
 				end
 			end 
 		end
-		hash
+		@hash = hash
 	end
 
 	def is_track?(line, threshold)
@@ -57,6 +59,14 @@ class TrackScraper
 		end
 		[@artist, @track]
 	end
+
+	def track_already_in_hash?(hash, artist, track)
+		hash.values do |v|
+			if v.any? { |text| text.include? track }
+				return true
+			end	
+		end
+	end	
 
 	def remove_numbers(string)
 		pattern = /[0-9]+. /
